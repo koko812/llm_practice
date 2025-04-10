@@ -15,12 +15,12 @@ def formatting_prompts_func(example):
         output_texts.append(text)
     return output_texts
 
-response_template = "### exa1:"
+response_template = " ### Answer:"
 collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
 print(type(collator))
 
-max_length=100
+max_length=500
 
 print(dataset[0])
 ex = formatting_prompts_func(dataset[0:10])
@@ -28,6 +28,7 @@ print(ex[0])
 print(len(ex))
 
 batch_encoding = tokenizer(ex[0], padding='max_length', max_length=max_length)
+print("collate")
 t_input = collator([batch_encoding])
 #print(t_input)
 
