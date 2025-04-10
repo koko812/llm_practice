@@ -1,1 +1,1 @@
-# sft_practice
+# llm_practice
