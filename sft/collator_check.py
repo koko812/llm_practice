@@ -19,7 +19,7 @@ collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenize
 
 print(type(collator))
 
-max_length=100
+max_length=500
 
 print(dataset[0])
 ex = formatting_prompts_func(dataset[0:10])
