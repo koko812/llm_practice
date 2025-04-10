@@ -24,26 +24,16 @@ text = tokenizer.apply_chat_template(
 )
 
 model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
-input_ids = model_inputs['input_ids']
-eos_token_id = tokenizer.eos_token_id
-max_length = 50
+max_length = 100
 
+'''
 with torch.no_grad():
     for i in range(max_length):
-        output = model(input_ids)
-        next_token_logits = output.logits[0, -1, :]
-        sorted_ids = torch.argsort(next_token_logits, descending=True)
-        next_token_id = sorted_ids[0]
-        #print(next_token_id)
-        #print(' '.join( tokenizer.decode(sorted_ids[:5]) ))
-        print(tokenizer.decode(next_token_id))
-        #print(next_token_id.item(), eos_token_id)
-        if next_token_id.item() == eos_token_id:
-            break
-        input_ids = torch.cat([input_ids, next_token_id.unsqueeze(0).unsqueeze(0)], dim=-1)
+        generated_ids = torch.max( output.logits , axis = 2).indices
+        output = model(generated_ids, attention_mask =torch.ones(generated_ids.shape[-1]))
 
+    generated_ids = torch.max( output.logits , axis = 2).indices
 
-"""
 print('--- outputs ---')
 print(output)
 print('--- ids ---')
@@ -53,6 +43,9 @@ print(generated_ids)
 response = tokenizer.batch_decode(torch.squeeze( generated_ids ), skip_special_tokens=True)
 print(response)
 
+'''
+model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
+output = model(**model_inputs)
 
 print('--- inputs ---')
 print(model_inputs['input_ids'].shape)
@@ -64,4 +57,3 @@ print(generated_ids)
 
 print(tokenizer.batch_decode(model_inputs['input_ids']))
 print(tokenizer.batch_decode(generated_ids))
-"""
