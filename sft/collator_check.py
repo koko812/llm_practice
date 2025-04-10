@@ -1,4 +1,3 @@
-
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 from trl import SFTConfig, SFTTrainer, DataCollatorForCompletionOnlyLM
@@ -15,7 +14,7 @@ def formatting_prompts_func(example):
         output_texts.append(text)
     return output_texts
 
-response_template = "### exa1:"
+response_template = " ### Answer:"
 collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
 print(type(collator))
@@ -28,6 +27,8 @@ print(ex[0])
 print(len(ex))
 
 batch_encoding = tokenizer(ex[0], padding='max_length', max_length=max_length)
+print("collate")
+# ここの入力が本当に謎すぎて萎えていた，が，普通にソースコードを読みに行ったら分かったのかもしれない
 t_input = collator([batch_encoding])
 #print(t_input)
 
