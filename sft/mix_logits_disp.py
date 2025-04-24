@@ -57,8 +57,8 @@ def simultaneous_generation(tokenizers, models, input_ids, max_length):
         if sft_generating:
             next_tokens = {}
             tmp_logits = [] 
-            for i in range(len(models)):
-                output = models[i](input_ids[i])
+            for j in range(len(models)):
+                output = models[j](input_ids[j])
 
                 next_token_logits = output.logits[0, -1, :]
                 tmp_logits.append(next_token_logits)
@@ -68,8 +68,8 @@ def simultaneous_generation(tokenizers, models, input_ids, max_length):
                 sorted_ids = torch.argsort(next_token_logits, descending=True)
                 next_token_id = sorted_ids[0]
 
-                next_token = tokenizers[i].decode(next_token_id)
-                next_tokens[model_index[i]] = {
+                next_token = tokenizers[j].decode(next_token_id)
+                next_tokens[model_index[j]] = {
                     next_token: next_token_logits[next_token_id].item()
                 }
 
@@ -78,11 +78,11 @@ def simultaneous_generation(tokenizers, models, input_ids, max_length):
                     sft_generating = False
 
                 # これまでの入力に次のトークンを繋げてループ先頭へ
-                input_ids[i] = torch.cat(
-                    [input_ids[i], next_token_id.unsqueeze(0).unsqueeze(0)], dim=-1
+                input_ids[j] = torch.cat(
+                    [input_ids[j], next_token_id.unsqueeze(0).unsqueeze(0)], dim=-1
                 )
 
-            print('next_tokens', next_tokens)
+            print(f'{i} next_tokens', next_tokens)
             tokens.append(next_tokens)
 
             all_temp_tokens = []
@@ -93,11 +93,44 @@ def simultaneous_generation(tokenizers, models, input_ids, max_length):
             print(all_temp_tokens)
 
             for tkn in all_temp_tokens:
-                for i in range(len(tokenizers)):
-                    id = tokenizers[i].encode(tkn)[-1]
-                    r_tkn = tokenizers[i].decode(id)
-                    print(model_index[i], tkn, id, r_tkn, tmp_logits[i][id].item())
+                for j in range(len(tokenizers)):
+                    id = tokenizers[j].encode(tkn)[-1]
+                    r_tkn = tokenizers[j].decode(id)
+                    print(model_index[j], tkn, id, r_tkn, tmp_logits[j][id].item())
 
+                    
+            # 混ぜながら inference できてるのはすごくいい話
+            # あとはどうしようかという話はいまだに残っている
+            # とりあえず，混ぜたやつから，次のやつを inference する必要がある，今までの系列に付け足してね
+            # ただ，やっぱりどうするんだろう感が結構強いんだが？
+            # beam を何本か作っておくのが吉なんだろうか
+            # 全然 proxy tune をする気がなくて笑う
+            # まあ，どちらにせよ，両方できる必要があるのでな，それは当然の話
+            # やっぱり，llm-jp-eval に組み込むのはなかなかにハードルが高い話だな
+            # 前やってた，MoE も完成させたいところは必ずある
+
+
+            """
+            other_logits = {}
+            print('\n ----- get mutual logits ----')
+            
+            for i in range(len(tokenizers)):
+                logits = {}
+                for token in next_tokens[model_index[i]].keys():
+                    id = tokenizers[i].encode(token)[1]
+                    print('token', token)
+                    print('id', id)
+                    logit = tmp_logits[i][id].item()
+                    logits[token] = logit
+                other_logits[model_index[i]] = logits
+
+            for k,v in other_logits.items():
+                print(k,v)
+
+            print('\n ---------------------- \n')
+            """    
+
+                
     return tokens
 
 
