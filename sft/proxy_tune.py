@@ -6,18 +6,17 @@ ft_model_name = "llm-jp/llm-jp-3-980m-instruct3"
 untune_model_name = "llm-jp/llm-jp-3-980m"
 # device_map をサンプルの時点から実装してるのはとても偉いと思う（当たり前か）
 
-base_model = AutoModelForCausalLM.from_pretrained(
-    base_model_name,
-    torch_dtype="auto",
-)
-ft_model = AutoModelForCausalLM.from_pretrained(
-    ft_model_name,
-    torch_dtype="auto",
-)
-untune_model = AutoModelForCausalLM.from_pretrained(
-    untune_model_name,
-    torch_dtype="auto",
-)
+def load_model(model_name):
+    model = AutoModelForCausalLM.from_pretrained(
+        base_model_name,
+        torch_dtype="auto",
+    )
+    return model
+
+base_model = load_model(base_model_name)
+ft_model = load_model(ft_model_name)
+untune_model = load_model(untune_model_name)
+
 base_tokenizer = AutoTokenizer.from_pretrained(base_model_name)
 ft_tokenizer = AutoTokenizer.from_pretrained(ft_model_name)
 
@@ -64,6 +63,11 @@ def inf_tokens_logits(tokenizer, model, input_ids, max_length):
 
     return tokens, prob_list
 
-tokens, prob_list = inf_tokens_logits(ft_tokenizer, ft_model, jp_input_ids, 50)
+tokens, prob_list = inf_tokens_logits(ft_tokenizer, ft_model, jp_input_ids, max_length)
 print(tokens)
 print(prob_list)
+
+for t,p in zip(tokens, prob_list):
+    st = str(t)
+    sp = str(p)
+    print(st+'\t'+sp)
