@@ -26,7 +26,6 @@ base_tokenizer = AutoTokenizer.from_pretrained(base_model_name)
 qwen_tokenizer = AutoTokenizer.from_pretrained(qwen_model_name)
 
 
-
 base_eos_token_id = base_tokenizer.eos_token_id
 qwen_eos_token_id = qwen_tokenizer.eos_token_id
 
